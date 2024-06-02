@@ -3,20 +3,24 @@ import axios from 'axios';
 import NodeCache from 'node-cache';
 const cache=new NodeCache();
 const apiUrl="https://newsapi.org/v2/top-headlines?apiKey=e663e6528ba141ee8b4349fa99723329";
-const everyThingUrl="https://newsapi.org/v2/everything?pageSize=40&from=2024-05-01&apiKey=e663e6528ba141ee8b4349fa99723329"
+
 const app = express();
 const port=4000;
 
-
+//asynchronus function to catch data or if not catched fetch using API 
 async function handleApiResponse(res, apiUrlWithParams){
     try {
+         // Create a cache key using the API URL with parameters
         const cacheKey = apiUrlWithParams;
+         // Check if the data is already cached
         const cachedData = cache.get(cacheKey);
         if (cachedData) {
             console.log('Using cached data');
+             // Return the cached data if found
             return res.status(200).json(cachedData);
         }
         console.log("getting news is running ");
+          // Fetch data from the API if not cached
         const response = await axios.get(apiUrlWithParams);
         cache.set(cacheKey, response.data, 600);
     
@@ -27,10 +31,13 @@ async function handleApiResponse(res, apiUrlWithParams){
     }
    
 }
-app.get(`/newsFilter`,async(req,res)=>{
+
+// Route handler for '/api/newsFilter' endpoint (async function for handling asynchronous operations)
+app.get(`/api/newsFilter`,async(req,res)=>{
 try {
     const { country, category, q } = req.query;
     let apiUrlWithParams = apiUrl;
+    //appending param if not null
     if (country) {
         apiUrlWithParams += `&country=${country}`;
     }
@@ -48,38 +55,8 @@ try {
 }
 })
 
-app.get('/newsSources',async(req,res)=>{
-    try {
-        const { sources } = req.query;
-        let apiUrlWithParams = apiUrl;
-        if (sources) {
-            apiUrlWithParams += `&sources=${sources}`;
-        }
-        console.log("news sources is running");
-        await handleApiResponse(res,apiUrlWithParams);
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        res.status(500).json({ error: 'An error occurred while fetching data' });
-    }
-})
 
-app.get(`/newsEverything`,async(req,res)=>{
-    try {
-        const { q,sortBy} = req.query;
-        let apiUrlWithParams = everyThingUrl;
-        if (q) {
-            apiUrlWithParams += `&q=${encodeURIComponent(q)}`;
-        }
-        if(sortBy){
-            apiUrlWithParams+=`&sortBy=${sortBy}`;
-        }
-        console.log("news everything is running");
-       await handleApiResponse(res,apiUrlWithParams);
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        res.status(500).json({ error: 'An error occurred while fetching data' });
-    }
-    })
+
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`);
