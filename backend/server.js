@@ -1,8 +1,12 @@
 import express from 'express';
 import axios from 'axios';
 import NodeCache from 'node-cache';
+import dotenv from 'dotenv';
+dotenv.config();
 const cache=new NodeCache();
-const apiUrl="https://newsapi.org/v2/top-headlines?apiKey=e663e6528ba141ee8b4349fa99723329";
+const apiKey=process.env.api_key;
+
+const apiUrl=`https://newsapi.org/v2/top-headlines?apikey=${apiKey}`;
 
 const app = express();
 const port=4000;
